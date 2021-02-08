@@ -1,55 +1,83 @@
-document.addEventListener('DOMContentLoaded',() =>{
-     const bird = document.querySelector('.bird')
-     const gameDisplay = document.querySelector('.game-container')
-     const ground = document.querySelector('.ground')
+document.addEventListener("DOMContentLoaded", () => {
+  const bird = document.querySelector(".bird");
+  const gameDisplay = document.querySelector(".game-container");
+  const ground = document.querySelector(".ground");
 
+  // have the bird in the center of the sky div
+  let birdLeft = 220;
+  let birdBottom = 100;
+  let gravity = 2;
+  let isGameOver = false;
+   let gap = 430; 
+  function startGame() {
+    birdBottom -= gravity;
+    bird.style.bottom = birdBottom + "px";
+    bird.style.left = birdLeft + "px";
+  }
+  let gameTimerId = setInterval(startGame, 20);
 
-     // have the bird in the center of the sky div 
-     let birdLeft = 220
-     let birdBottom = 100
-     let gravity = 2
+  function control(e) {
+    // note that the keyCode 32 is the spacebar
+    // 65 is a
+    if (e.keyCode === 65) {
+      jump();
+    }
+  }
 
+  function jump() {
+    if (birdBottom < 500) birdBottom += 50;
+    bird.style.bottom = birdBottom + "px";
+  }
+  document.addEventListener("keyup", control);
 
-     function startGame(){
-         birdBottom -= gravity
-         bird.style.bottom = birdBottom + 'px';
-         bird.style.left = birdLeft + 'px'
-     }
-     let timerId = setInterval(startGame, 20)
+  function generateObstacle() {
+    let obstacleLeft = 500;
+    let randomHeight = Math.random() * 60;
+    let obstacleBottom = randomHeight;
+    const obstacle = document.createElement("div");
+    const topObstacle = document.createElement("div");
+    // if game is over no more obstacles appear
+    if (!isGameOver) {
+        obstacle.classList.add("obstacle")
+        topObstacle.classList.add("topObstacle")
+}
+    gameDisplay.appendChild(obstacle)
+    gameDisplay.appendChild(topObstacle);
+    obstacle.style.left = obstacleLeft + "px";
+    topObstacle.style.left = obstacleLeft + "px";
+    obstacle.style.bottom = obstacleBottom + "px";
+    topObstacle.style.bottom = obstacleBottom + gap + "px";
 
-     function control(e){
-         // note that the keyCode 32 is the spacebar 
-         if(e.keyCode === 32){
-                jump()
-         }
-     }
+    function moveObstacle() {
+      obstacleLeft -= 2;
+      obstacle.style.left = obstacleLeft + "px";
+      topObstacle.style.left = obstacleLeft + "px";
 
-     function jump(){
-        if( birdBottom< 500) birdBottom += 50
-         bird.style.bottom = birdBottom + 'px'
-     }
-     document.addEventListener('keyup', control)
+      if (obstacleLeft === -60) {
+        clearInterval(timerId);
+        gameDisplay.removeChild(obstacle);
+        gameDisplay.removeChild(topObstacle );
 
-     function generateObstacle(){
-         let obstacleLeft = 500
-         let randomHeight = Math.random() * 60
-         let obstacleBottom = randomHeight
-         const obstacle = document.createElement('div')
-         obstacle.classList.add('obstacle')
-         gameDisplay.appendChild(obstacle)
-         obstacle.style.left = obstacleLeft + 'px'
-         obstacle.style.bottom = obstacleBottom + 'px'
+      }
+      if (
+        (obstacleLeft > 200 &&
+          obstacleLeft < 280 &&
+          obstacleLeft === 220 &&
+          (birdBottom < obstacleBottom + 153 || birdBottom > obstacleBottom + gap - 200)) ||
+        birdBottom === 0
+      ) {
+        gameOver();
+        clearInterval(timerId);
+      }
+    }
+    let timerId = setInterval(moveObstacle, 20);
+    if (!isGameOver) setTimeout(generateObstacle, 3000);
+  }
+  generateObstacle();
 
-        function moveObstacle(){
-            obstacleLeft -= 2
-            obstacle.style.left = obstacleLeft + 'px'
-            if( obstacleLeft === -60){
-                clearInterval(timerId)
-                gameDisplay.removeChild(obstacle)
-            }
-        }
-        let timerId = setInterval(moveObstacle, 20)
-
-     }
-     generateObstacle()
-})
+  function gameOver() {
+    clearInterval(gameTimerId);
+    isGameOver = true;
+    document.removeEventListener("keyup", control);
+  }
+});
